@@ -11,7 +11,7 @@ Stateless Future For Akka
       def nextInt = Future {
         nextMessage.await.toString.toInt
       }
-      def receive = Future {
+      override def receive = Future {
         while (true) {
           val numberOfSubstrings = nextInt.await
           var i = 0
