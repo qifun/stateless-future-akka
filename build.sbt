@@ -2,11 +2,11 @@ organization := "com.qifun"
 
 name := "stateless-future-akka"
 
-version := "0.1.0-SNAPSHOT"
+version := "0.1.0"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2"
 
-libraryDependencies += "com.qifun" %% "stateless-future" % "0.2.0-SNAPSHOT"
+libraryDependencies += "com.qifun" %% "stateless-future" % "0.2.0"
 
 libraryDependencies <+= (scalaVersion) { sv =>
   "org.scala-lang" % "scala-reflect" % sv
