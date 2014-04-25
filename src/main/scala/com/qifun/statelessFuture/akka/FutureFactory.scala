@@ -28,10 +28,11 @@ import com.qifun.statelessFuture.Awaitable
 import akka.actor.Actor
 import akka.actor.ActorContext
 
-/**
- * Used internally only.
- */
 object FutureFactory {
+
+  /**
+   * Used internally only.
+   */
   final def futureMacro(c: Context)(block: c.Expr[Any]): c.Expr[Nothing] = {
     import c.universe._
     val FutureName = newTermName("Future")
