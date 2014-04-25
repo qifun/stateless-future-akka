@@ -32,21 +32,72 @@ import akka.actor.ActorContext
  * Used internally only.
  */
 object FutureFactory {
-  final def behaviorMacro(c: Context)(block: c.Expr[Any]): c.Expr[Nothing] = {
+  final def futureMacro(c: Context)(block: c.Expr[Any]): c.Expr[Nothing] = {
     import c.universe._
     val FutureName = newTermName("Future")
     val Apply(TypeApply(Select(thisTree, FutureName), List(t)), _) = c.macroApplication
-    ANormalForm.applyMacroWithType(c)(block, t, Select(thisTree, newTypeName("TailRecResult")), AppliedTypeTree(Select(thisTree, newTypeName("Future")), List(t)))
+    ANormalForm.applyMacroWithType(c)(block, t, Select(thisTree, newTypeName("TailRecResult")))
   }
+
+  import scala.language.implicitConversions
+
+  /**
+   * Implicitly converts a `Future[Nothing]` to an `akka.actor.Actor.Receive`.
+   * @note This method is usually used to implement `Actor`'s `receive` method.
+   * @param future The future that takes control forever.
+   * @return The entry that receive the first message.
+   * @example override def receive = newContinualReceive(myFuture)
+   */
+  @inline
+  implicit final def receiveForever(future: FutureFactory#Future[Nothing]): Actor.Receive = {
+    future.onComplete { u =>
+      done(null)
+    }(PartialFunction.empty).result match {
+      case r: FutureFactory#ReceiveAll => r
+      case _ => throw new IllegalStateException
+    }
+  }
+
+  /**
+   * Converts a `Future[Unit] to an `akka.actor.Actor.Receive`.
+   * @note This method usually works with `context.become`.
+   * @param future The future that takes control until it returns.
+   * When `future` returns, `context.unbecome` will be called, in order to return to the previous `akka.actor.Actor.Receive`.
+   * @return `None` if `future` has exited before invoking `nextMessage.await`, `Some` if `future` has invoked `nextMessage.await`.
+   * @example receiveUntilReturn(myFuture) foreach { context.become(_, false) }
+   */
+  @inline
+  final def receiveUntilReturn(future: FutureFactory#Future[Unit]): Option[Actor.Receive] = {
+    future.onComplete { u =>
+      done(Unbecome)
+    }(PartialFunction.empty).result match {
+      case r: FutureFactory#ReceiveAll => Some(r)
+      case Unbecome => None
+    }
+  }
+
+  /**
+   * Used for type check, to distinguish futures for different actors.
+   */
+  sealed abstract class TailRecResult[+FutureFactory] {
+    def continue(context: ActorContext): Unit
+  }
+
+  private final object Unbecome extends TailRecResult[Nothing] {
+    override final def continue(context: ActorContext): Unit = {
+      context.unbecome()
+    }
+  }
+
 }
 
 /**
- * A factory that creates stateless futures for an actor.
+ * A factory that produces stateless futures for an actor.
  */
 trait FutureFactory {
 
   /**
-   * The context of an actor, which is mostly implemented by `akka.actor.Actor` when mixing-in [[FutureFactory]] with `akka.actor.Actor`
+   * The context of an actor, which is most likely implemented by `akka.actor.Actor` when mixing-in [[FutureFactory]] with `akka.actor.Actor`
    */
   implicit def context: ActorContext
 
@@ -54,9 +105,7 @@ trait FutureFactory {
    * The unique type of future for an actor.
    * @note Unlike [[com.qifun.statelessFuture.Future]], futures from different [[FutureFactory]] instances are distinct types.
    */
-  type Future[+AwaitResult] = Awaitable[AwaitResult, TailRecResult] {
-    def onComplete(rest: Any => TailRec[TailRecResult])(implicit catcher: Catcher[TailRec[TailRecResult]]): TailRec[ReceiveAll]
-  }
+  type Future[+AwaitResult] = Awaitable[AwaitResult, TailRecResult]
 
   import scala.language.experimental.macros
 
@@ -64,10 +113,10 @@ trait FutureFactory {
    * The magic constructor of [[Future]], which allows the magic `await` methods in the `block`.
    * @note You are able to `await` a future in another future only if the two futures are from the same [[FutureFactory]] instance.
    */
-  final def Future[AwaitResult](block: AwaitResult): Future[AwaitResult] = macro FutureFactory.behaviorMacro
+  final def Future[AwaitResult](block: AwaitResult): Future[AwaitResult] = macro FutureFactory.futureMacro
 
   /**
-   * Receive the next message from mail box of the actor.
+   * Receive the next message from the mail box of the actor.
    */
   final def nextMessage: Future[Any] = new Awaitable.Stateless[Any, TailRecResult] {
     override final def onComplete(rest: Any => TailRec[TailRecResult])(implicit catcher: Catcher[TailRec[TailRecResult]]): TailRec[ReceiveAll] = {
@@ -75,36 +124,18 @@ trait FutureFactory {
     }
   }
 
-  import scala.language.implicitConversions
-
   /**
-   * The implicit converter from [[Future]] to `akka.actor.Actor.Receive`.
+   * Used for type check, to distinguish futures for different actors.
    */
-  @inline
-  implicit final def futureToReceive(future: Future[Any]): Actor.Receive = {
-    future.onComplete { u =>
-      done(new TailRecResult {
-        override final def continue(): Unit = {
-          context.unbecome()
-        }
-      })
-    }(PartialFunction.empty).result
-  }
+  type TailRecResult = FutureFactory.TailRecResult[this.type]
 
-  /**
-   * Used internally only.
-   */
-  sealed abstract class TailRecResult {
-    def continue(): Unit
-  }
-
-  private[FutureFactory] final class ReceiveAll private[FutureFactory] (rest: Any => TailRec[TailRecResult]) extends TailRecResult with Actor.Receive {
-    override final def continue(): Unit = {
+  private final class ReceiveAll private[FutureFactory] (rest: Any => TailRec[TailRecResult]) extends TailRecResult with Actor.Receive {
+    override final def continue(context: ActorContext): Unit = {
       context.become(this)
     }
     override final def isDefinedAt(any: Any) = true
     override final def apply(any: Any): Unit = {
-      rest(any).result.continue()
+      rest(any).result.continue(context)
     }
   }
 
