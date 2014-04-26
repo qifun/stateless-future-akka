@@ -1,18 +1,59 @@
 Stateless Future For Akka
 =========================
 
+**stateless-future-akka** allows you to build control flow for Akka actor in the native Scala syntax.
+
 ## Usage
+
+### Step 1: Mix-in `FutureFactory` with your `Actor`
+
+    import com.qifun.statelessFuture.akka.FutureFactory
+    import akka.actor._
+    class YourActor extends Actor with FutureFactory {
+    }
+
+### Step 2: Implement the `receive` method from a `Future` block
+
+    import com.qifun.statelessFuture.akka.FutureFactory
+    import akka.actor._
+    class YourActor extends Actor with FutureFactory {
+      override def receive = Future {
+      	???
+      }
+    }
+
+### Step 3: Receive and send message in the `Future` block
+
+There is a magic method `nextMessage.await` that receive the next message from the actor's mail box. Unlike in a `Actor.Receive`, you can receive multiple message sequentially:
+
+    import com.qifun.statelessFuture.akka.FutureFactory
+    import akka.actor._
+    class YourActor extends Actor with FutureFactory {
+      override def receive = Future {
+        while (true) {
+          val message1 = nextMessage.await
+          val message1 = nextMessage.await
+          sender ! s"You have sent me $message1 and $message2"
+        }
+      }
+    }
+
+Note that the `Future` block for `receive` must receive all the message until the actor stops. In fact, the `def receive = Future { ??? }` is a shortcut of `def receive = FutureFactory.receiveForever(Future[Nothing] { ??? })`.
+
+## Another sample that create an actor that concantenate arbitrary number of strings.
 
     import com.qifun.statelessFuture.akka.FutureFactory
     import akka.actor._
     import scala.concurrent.duration._
     
     class ConcatenationActor extends Actor with FutureFactory {
-      def nextInt = Future {
+      def nextInt: Future[Int] = Future {
         nextMessage.await.toString.toInt
       }
       override def receive = Future {
         while (true) {
+	  // Should behave the same as:
+	  // val numberOfSubstrings = nextMessage.await.toString.toInt
           val numberOfSubstrings = nextInt.await
           var i = 0
           val sb = new StringBuilder
