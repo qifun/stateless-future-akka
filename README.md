@@ -52,8 +52,8 @@ Note that the `Future` block for `receive` must receive all the message until th
       }
       override def receive = Future {
         while (true) {
-	  // Should behave the same as:
-	  // val numberOfSubstrings = nextMessage.await.toString.toInt
+          // Should behave the same as:
+          // val numberOfSubstrings = nextMessage.await.toString.toInt
           val numberOfSubstrings = nextInt.await
           var i = 0
           val sb = new StringBuilder
