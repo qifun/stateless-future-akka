@@ -35,6 +35,7 @@ There is a magic method `nextMessage.await` that receive the next message from t
           val message1 = nextMessage.await
           sender ! s"You have sent me $message1 and $message2"
         }
+        throw new IllegalStateException("Unreachable code!")
       }
     }
 
