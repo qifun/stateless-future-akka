@@ -41,7 +41,9 @@ There is a magic method `nextMessage.await` that receive the next message from t
 
 Note that the `Future` block for `receive` must receive all the message until the actor stops. In fact, the `def receive = Future { ??? }` is a shortcut of `def receive = FutureFactory.receiveForever(Future[Nothing] { ??? })`.
 
-## Another sample that create an actor that concantenate arbitrary number of strings.
+## Another example
+
+This example creates an actor that concantenates arbitrary number of strings.
 
     import com.qifun.statelessFuture.akka.FutureFactory
     import akka.actor._
