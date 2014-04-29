@@ -2,7 +2,7 @@ organization := "com.qifun"
 
 name := "stateless-future-akka"
 
-version := "0.1.1"
+version := "0.1.2-SNAPSHOT"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2"
 
