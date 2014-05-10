@@ -113,13 +113,15 @@ trait FutureFactory {
   /**
    * The magic constructor of [[Future]], which allows the magic `await` methods in the `block`.
    * @note You are able to `await` a future in another future only if the two futures are from the same [[FutureFactory]] instance.
+   * @usecase def Future[AwaitResult](block: AwaitResult): Future[AwaitResult] = ???
    */
-  final def Future[AwaitResult](block: AwaitResult): Future[AwaitResult] = macro FutureFactory.futureMacro
+  final def Future[AwaitResult](block: AwaitResult): Awaitable.Stateless[AwaitResult, TailRecResult] = macro FutureFactory.futureMacro
 
   /**
    * Receive the next message from the mail box of the actor.
+   * @usecase def nextMessage: Future[Any] = ???
    */
-  final def nextMessage: Future[Any] = new Awaitable.Stateless[Any, TailRecResult] {
+  final def nextMessage: Awaitable.Stateless[Any, TailRecResult] = new Awaitable.Stateless[Any, TailRecResult] {
     override final def onComplete(rest: Any => TailRec[TailRecResult])(implicit catcher: Catcher[TailRec[TailRecResult]]): TailRec[ReceiveAll] = {
       done(new ReceiveAll(rest))
     }
