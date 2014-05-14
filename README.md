@@ -24,7 +24,7 @@ Stateless Future For Akka
 
 ### Step 3: Receive and send message in the `Future` block
 
-There is a magic method `nextMessage.await` that receive the next message from the actor's mail box. Unlike in a `Actor.Receive`, you can receive multiple message sequentially:
+There is a magic method `nextMessage.await` that receive the next message from the actor's mail box. Unlike a normal `Actor.Receive`, You are able to receive multiple message sequentially in a `Future` block:
 
     import com.qifun.statelessFuture.akka.FutureFactory
     import akka.actor._
