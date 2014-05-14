@@ -32,7 +32,7 @@ There is a magic method `nextMessage.await` that receive the next message from t
       override def receive = Future {
         while (true) {
           val message1 = nextMessage.await
-          val message1 = nextMessage.await
+          val message2 = nextMessage.await
           sender ! s"You have sent me $message1 and $message2"
         }
         throw new IllegalStateException("Unreachable code!")
