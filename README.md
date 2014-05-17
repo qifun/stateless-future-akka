@@ -97,3 +97,8 @@ Put these lines in your `build.sbt` if you use [Sbt](http://www.scala-sbt.org/):
     libraryDependencies += "com.qifun" %% "stateless-future-akka" % "0.1.1"
 
 `stateless-future-akka` should work with Scala 2.10.3, 2.10.4, or 2.11.0.
+
+## Links
+
+* [The API document](http://central.maven.org/maven2/com/qifun/stateless-future-akka_2.11/0.1.1/stateless-future-akka_2.11-0.1.1-javadoc.jar)
+* [Tests and examples](https://github.com/Atry/stateless-future-test/tree/2.10.x/test/src/test/scala/com/qifun/statelessFuture/test/run)
