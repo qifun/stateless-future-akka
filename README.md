@@ -1,6 +1,8 @@
 Stateless Future For Akka
 =========================
 
+<div align="right"><a href="https://travis-ci.org/qifun/stateless-future-akka"><img alt="Build Status" src="https://travis-ci.org/qifun/stateless-future-akka.png?branch=master"/></a></div>
+
 **stateless-future-akka** allows you to build control flow for Akka actor in the native Scala syntax. `stateless-future-akka` bases on [stateless-future](https://github.com/Atry/stateless-future), which is a better future system than `scala.concurrent.Future`.
 
 ## Usage
