@@ -48,6 +48,7 @@ object FutureFactory {
    * @param future The future that takes control forever.
    * @return The entry that receive the first message.
    * @example override def receive = newContinualReceive(myFuture)
+   * @usecase implicit final def receiveForever(future: FutureFactory#Future[Nothing]): Actor.Receive = ???
    */
   @inline
   implicit final def receiveForever(future: FutureFactory#Future[Nothing]): Actor.Receive = {
@@ -66,6 +67,7 @@ object FutureFactory {
    * When `future` returns, `context.unbecome` will be called, in order to return to the previous `akka.actor.Actor.Receive`.
    * @return `None` if `future` has exited before invoking `nextMessage.await`, `Some` if `future` has invoked `nextMessage.await`.
    * @example receiveUntilReturn(myFuture) foreach { context.become(_, false) }
+   * @usecase final def receiveUntilReturn(future: FutureFactory#Future[Unit]): Option[Actor.Receive] = ???
    */
   @inline
   final def receiveUntilReturn(future: FutureFactory#Future[Unit]): Option[Actor.Receive] = {

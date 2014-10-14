@@ -24,7 +24,7 @@ Stateless Future For Akka
 
 ### Step 3: Receive and send message in the `Future` block
 
-There is a magic method `nextMessage.await` that receive the next message from the actor's mail box. Unlike in a `Actor.Receive`, you can receive multiple message sequentially:
+There is a magic method `nextMessage.await` that receive the next message from the actor's mail box. Unlike a normal `Actor.Receive`, You are able to receive multiple message sequentially in a `Future` block:
 
     import com.qifun.statelessFuture.akka.FutureFactory
     import akka.actor._
@@ -32,7 +32,7 @@ There is a magic method `nextMessage.await` that receive the next message from t
       override def receive = Future {
         while (true) {
           val message1 = nextMessage.await
-          val message1 = nextMessage.await
+          val message2 = nextMessage.await
           sender ! s"You have sent me $message1 and $message2"
         }
         throw new IllegalStateException("Unreachable code!")
@@ -97,3 +97,8 @@ Put these lines in your `build.sbt` if you use [Sbt](http://www.scala-sbt.org/):
     libraryDependencies += "com.qifun" %% "stateless-future-akka" % "0.1.1"
 
 `stateless-future-akka` should work with Scala 2.10.3, 2.10.4, or 2.11.0.
+
+## Links
+
+* [The API document](http://central.maven.org/maven2/com/qifun/stateless-future-akka_2.11/0.1.1/stateless-future-akka_2.11-0.1.1-javadoc.jar)
+* [Tests and examples](https://github.com/Atry/stateless-future-test/tree/2.10.x/test/src/test/scala/com/qifun/statelessFuture/test/run)
