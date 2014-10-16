@@ -45,7 +45,7 @@ Note that the `Future` block for `receive` must receive all the message until th
 
 ## Another example
 
-This example creates an actor that concantenates arbitrary number of strings.
+This example creates an actor that concatenates arbitrary number of strings.
 
     import com.qifun.statelessFuture.akka.FutureFactory
     import akka.actor._
